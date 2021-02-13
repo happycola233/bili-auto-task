@@ -53,7 +53,13 @@ def update (): # 检查更新
                 print (update_content)
                 print ()
                 print ("是否更新？")
-                update_choose = input ("输入1立即更新，输入2则跳过更新 [1/2] ")
+                
+                while True: # 一直循环
+                    update_choose = input ("输入1立即更新，输入2则跳过更新 [1/2] ")
+                    if update_choose == "1" or update_choose == "2": # 用户的选择有效
+                        break # 跳出循环
+                    print ("请输入数字：1或2！") # 提示用户的选择无效，并再次循环
+                    
                 if update_choose == "1": # 立即更新
                     update_link = eval (update.text).get ("data").get ("link")
                     update_filename = eval (update.text).get ("data").get ("filename")
@@ -212,6 +218,7 @@ def main (): # 主程序
     
     if video == []: # 没有有效的视频可用
         print ("\033[1;37m没有找到有效的视频，无法完成任务！请开启历史记录并多看几个视频！\033[0m") # 彩色文字：白色，代号37
+        os.system ("pause >nul") # 防止程序运行结束后窗口自动关闭
         sys.exit ()
     
     if "1" in choose: # 用户的选择中是否有“1”（登录+观看视频）
