@@ -205,16 +205,12 @@ def main (): # 主程序
     for hot in eval (result).get ("data").get ("list"): # 根据视频排行榜中的视频来循环
         vid.append (str (hot.get ("aid"))) # 获取这些视频的av号，并添加进数组
     
-    video = vid.copy ()
+    video = []
     for avnumber in vid: # 对所有视频进行去重并判断视频的有效性
-        cnt = video.count (avnumber) # 这个视频在数组中出现的次数
-        if cnt > 1: # 这个视频在数组中重复出现
-            for i in range (cnt - 1): # 删除多余的视频
-                video.remove (avnumber)
-            continue # 到循环尾
-        result = requests.get ("https://api.bilibili.com/x/web-interface/archive/stat?aid=" + avnumber, headers = headers).text # 获取视频的状态数
-        if eval (result).get ("code") != 0: # 获取失败
-            video.remove (avnumber) # 删除这个视频
+        if avnumber not in video: # 如果新列表中没有这个视频，就要添加视频
+            result = requests.get ("https://api.bilibili.com/x/web-interface/archive/stat?aid=" + avnumber, headers = headers).text # 获取视频的状态数
+            if eval (result).get ("code") == 0: # 获取成功
+                video.append (avnumber) # 添加有效视频
     
     if video == []: # 没有有效的视频可用
         print ("\033[1;37m没有找到有效的视频，无法完成任务！请开启历史记录并多看几个视频！\033[0m") # 彩色文字：白色，代号37
