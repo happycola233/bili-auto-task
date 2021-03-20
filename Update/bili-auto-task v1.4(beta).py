@@ -232,7 +232,7 @@ def main (): # 主程序
                 can_coin = 1 # 这个视频可以投1个币
             
             result = requests.get ("https://api.bilibili.com/x/web-interface/archive/coins?aid=" + coin_video, headers = headers).text # 获取当前用户为这个视频投的硬币数
-            already_coin = eval (result)  ["data"]  ["multiply"] # 用户已经为这个视频投币的数量
+            already_coin = eval (result) ["data"] ["multiply"] # 用户已经为这个视频投币的数量
             if already_coin < can_coin: # 用户为这个视频投的硬币数小于这个视频可以投的硬币数，就可以继续操作；否则，会提示投的硬币数超过上限
                 can_coin -= already_coin # 这个视频可以投的硬币数减去用户已经为这个视频的投币数
                 coin_count = 0
