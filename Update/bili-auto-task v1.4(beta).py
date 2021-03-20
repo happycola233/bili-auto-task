@@ -44,12 +44,12 @@ def update (): # 检查更新
         check () # 检查配置文件是否存在
         return
     if update.status_code == 200: # 判断服务器响应状态码是否正常
-        update_message = eval (update.text).get ("message")
+        update_message = eval (update.text) ["message"]
         if update_message == "ok": # 判断该程序还能正常使用（如果变量update_message的值不等于“ok”，则代表该程序因特殊原因被作者停止使用）
-            update_version = eval (update.text).get ("data").get ("version")
+            update_version = eval (update.text) ["data"] ["version"]
             if update_version != version: # 版本不相同，说明有新版本
                 print ("检测到新版本：\033[1;36mv" + update_version + "\033[0m（当前版本：\033[1;37mv" + version + "\033[0m）")
-                update_content = eval (update.text).get ("data").get ("content")
+                update_content = eval (update.text) ["data"] ["content"]
                 print (update_content)
                 print ()
                 print ("是否更新？")
@@ -61,8 +61,8 @@ def update (): # 检查更新
                     print ("请输入数字：1或2！") # 提示用户的选择无效，并再次循环
                     
                 if update_choose == "1": # 立即更新
-                    update_link = eval (update.text).get ("data").get ("link")
-                    update_filename = eval (update.text).get ("data").get ("filename")
+                    update_link = eval (update.text) ["data"] ["link"]
+                    update_filename = eval (update.text) ["data"] ["filename"]
                     # 下载文件代码（开始）
                     with closing (requests.get (update_link,headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.104 Safari/537.36"}, stream = True)) as update_file:
                         chunk_size = 1024 # 单次请求最大值
@@ -181,7 +181,7 @@ def main (): # 主程序
     
     # 获取API返回值（验证Cookie是否失效）  
     result = requests.get ("https://api.bilibili.com/x/web-interface/nav", headers = headers).text # 获取当前用户登录信息
-    code = eval (result).get ("code") # 获取命令行返回值，并改变编码为“utf-8”，转换类型为“词典”，并获取API的返回值
+    code = eval (result) ["code"] # 获取命令行返回值，并改变编码为“utf-8”，转换类型为“词典”，并获取API的返回值
     
     if code != 0: # 账号未登录（-101），请求错误（-400），或者是其他原因导致的失败
         print ("\033[1;37m请正确填写有效的Cookie！\033[0m") # 彩色文字：白色，代号37
@@ -197,19 +197,19 @@ def main (): # 主程序
     # 判断程序后续将投币或转发等操作执行到哪些视频（如果历史记录存在视频，使用历史记录中的视频，并使用视频排行榜中的视频）
     vid = []
     result = requests.get ("https://api.bilibili.com/x/web-interface/history/cursor", headers = headers).text # 获取视频历史记录
-    for history in eval (result).get ("data").get ("list"): # 根据历史记录中的视频来循环
-        if history.get ("history").get ("business") == "archive": # 如果这一条记录是视频（不是视频将无法投币）
-            vid.append (str (history.get ("history").get ("oid"))) # 获取这个视频的av号，并添加进数组
+    for history in eval (result) ["data"] ["list"]: # 根据历史记录中的视频来循环
+        if history ["history"] ["business"] == "archive": # 如果这一条记录是视频（不是视频将无法投币）
+            vid.append (str (history ["history"] ["oid"])) # 获取这个视频的av号，并添加进数组
     
     result = requests.get ("https://api.bilibili.com/x/web-interface/ranking").text # 获取视频排行榜中的视频
-    for hot in eval (result).get ("data").get ("list"): # 根据视频排行榜中的视频来循环
-        vid.append (str (hot.get ("aid"))) # 获取这些视频的av号，并添加进数组
+    for hot in eval (result) ["data"] ["list"]: # 根据视频排行榜中的视频来循环
+        vid.append (str (hot ["aid"])) # 获取这些视频的av号，并添加进数组
     
     video = []
     for avnumber in vid: # 对所有视频进行去重并判断视频的有效性
         if avnumber not in video: # 如果新列表中没有这个视频，就要添加视频
             result = requests.get ("https://api.bilibili.com/x/web-interface/archive/stat?aid=" + avnumber, headers = headers).text # 获取视频的状态数
-            if eval (result).get ("code") == 0: # 获取成功
+            if eval (result) ["code"] == 0: # 获取成功
                 video.append (avnumber) # 添加有效视频
     
     if video == []: # 没有有效的视频可用
@@ -226,13 +226,13 @@ def main (): # 主程序
         need_coin = int (coin) # 需要投的硬币数
         for coin_video in video: # 根据可以投币的视频的数量来循环
             result = requests.get ("https://api.bilibili.com/x/web-interface/view?aid=" + coin_video, headers = headers).text # 获取视频的信息
-            if eval (result).get ("data").get ("copyright") == 1: # 视频为自制（1）
+            if eval (result) ["data"] ["copyright"] == 1: # 视频为自制（1）
                 can_coin = 2 # 这个视频可以投2个币
             else: # 视频为转载（2）或者其他类型
                 can_coin = 1 # 这个视频可以投1个币
             
             result = requests.get ("https://api.bilibili.com/x/web-interface/archive/coins?aid=" + coin_video, headers = headers).text # 获取当前用户为这个视频投的硬币数
-            already_coin = eval (result).get ("data").get ("multiply") # 用户已经为这个视频投币的数量
+            already_coin = eval (result)  ["data"]  ["multiply"] # 用户已经为这个视频投币的数量
             if already_coin < can_coin: # 用户为这个视频投的硬币数小于这个视频可以投的硬币数，就可以继续操作；否则，会提示投的硬币数超过上限
                 can_coin -= already_coin # 这个视频可以投的硬币数减去用户已经为这个视频的投币数
                 coin_count = 0
@@ -258,33 +258,33 @@ def main (): # 主程序
     # 查询任务完成状态
     while True: # 一直循环
         result = requests.get ("https://api.bilibili.com/x/member/web/exp/reward", headers = headers).text # 获取用户的任务完成状态
-        data = eval (result).get ("data")
+        data = eval (result) ["data"]
         result_coin = requests.get ("https://api.bilibili.com/x/web-interface/coin/today/exp", headers = headers).text # 获取用户给视频投了多少枚硬币
         
-        if data.get ("login"): # 是否已登录
+        if data ["login"]: # 是否已登录
             login = "\033[1;36m已完成\033[0m（\033[1;36m5\033[0m经验）" # 彩色文字：青蓝色，代号36
         else:
             login = "\033[1;37m未完成\033[0m（\033[1;37m0\033[0m经验）" # 彩色文字：白色，代号37
         
-        if data.get ("watch"): # 是否已观看视频
+        if data ["watch"]: # 是否已观看视频
             watch = "\033[1;36m已完成\033[0m（\033[1;36m5\033[0m经验）" # 彩色文字：青蓝色，代号36
         else:
             watch = "\033[1;37m未完成\033[0m（\033[1;37m0\033[0m经验）" # 彩色文字：白色，代号37
         
-        if data.get ("share"): # 是否已分享视频
+        if data ["share"]: # 是否已分享视频
             share = "\033[1;36m已完成\033[0m（\033[1;36m5\033[0m经验）" # 彩色文字：青蓝色，代号36
         else:
             share = "\033[1;37m未完成\033[0m（\033[1;37m0\033[0m经验）" # 彩色文字：白色，代号37
         
         if ("1" in choose and "已完成" in (login and watch)) or (not "1" in choose): # (1)变量choose包含“1”并且变量login和变量watch都包含“已完成”  (2)变量choose不包含“1”【当满足(1)或(2)时执行if内的操作】
-            if ("2" in choose and int (eval (result_coin).get ("data")) / 10 >= int (coin)) or (not "2" in choose): # (1)变量choose包含“2”并且当前已投币数大于等于用户设定投币数    (2)变量choose不包含“2”【当满足(1)或(2)时执行if内的操作】
+            if ("2" in choose and int (eval (result_coin) ["data"]) / 10 >= int (coin)) or (not "2" in choose): # (1)变量choose包含“2”并且当前已投币数大于等于用户设定投币数    (2)变量choose不包含“2”【当满足(1)或(2)时执行if内的操作】
                 if ("3" in choose and "已完成" in share) or (not "3" in choose): # (1)变量choose包含“3”并且变量share包含“已完成”    (2)变量choose不包含“3”【当满足(1)或(2)时执行if内的操作】
                     break # 跳出循环
         
-        print ("\r登录：" + login + "，观看视频：" + watch + "，分享：" + share + "，投币：\033[1;36m" + str (int (int (eval (result_coin).get ("data")) / 10)) + "\033[0m个（\033[1;36m" + str (eval (result_coin).get ("data")) + "\033[0m经验）", end = "") # 将光标移到本行首位，覆盖原有输出（同行内动态输出任务完成状态）
+        print ("\r登录：" + login + "，观看视频：" + watch + "，分享：" + share + "，投币：\033[1;36m" + str (int (int (eval (result_coin) ["data"]) / 10)) + "\033[0m个（\033[1;36m" + str (eval (result_coin) ["data"]) + "\033[0m经验）", end = "") # 将光标移到本行首位，覆盖原有输出（同行内动态输出任务完成状态）
         time.sleep (0.5) # 等待0.5秒
     
-    print ("\r登录：" + login + "，观看视频：" + watch + "，分享：" + share + "，投币：\033[1;36m" + str (int (int (eval (result_coin).get ("data")) / 10)) + "\033[0m个（\033[1;36m" + str (eval (result_coin).get ("data")) + "\033[0m经验）", end = "") # 将光标移到本行首位，覆盖原有输出（同行内动态输出任务完成状态）
+    print ("\r登录：" + login + "，观看视频：" + watch + "，分享：" + share + "，投币：\033[1;36m" + str (int (int (eval (result_coin) ["data"]) / 10)) + "\033[0m个（\033[1;36m" + str (eval (result_coin) ["data"]) + "\033[0m经验）", end = "") # 将光标移到本行首位，覆盖原有输出（同行内动态输出任务完成状态）
     print ("\n\n完成任务共用时：\033[1;33m" + str (round (end - start, 2)) + "秒\033[0m") # 彩色文字：黄色，代号33
     os.system ("pause >nul") # 防止程序运行结束后窗口自动关闭
     sys.exit () # 关闭本程序
