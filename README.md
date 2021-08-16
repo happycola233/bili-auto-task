@@ -9,4 +9,4 @@
 3. 建议大家自己完成任务，不要使用一些非法手段来骗B站！
 
 #### 参与贡献
-本程序由“[wuziqian211](http://https://gitee.com/wuziqian211)”协助完成，感谢用户“[wuziqian211](http://https://gitee.com/wuziqian211)”的大力支持！
+本程序由“[wuziqian211](http://gitee.com/wuziqian211)”协助完成，感谢用户“[wuziqian211](http://gitee.com/wuziqian211)”的大力支持！
